@@ -1,0 +1,26 @@
+[
+    {
+        "model": "users.department",
+        "pk": 1,
+        "fields": {
+            "name": "Nutrição",
+            "institude": 1
+        }
+    },
+    {
+        "model": "users.department",
+        "pk": 2,
+        "fields": {
+            "name": "Bioquímica",
+            "institude": 1
+        }
+    },
+    {
+        "model": "users.department",
+        "pk": 3,
+        "fields": {
+            "name": "Educação Física",
+            "institude": 1
+        }
+    }
+]

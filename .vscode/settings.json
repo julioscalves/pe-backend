@@ -1,0 +1,10 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+<<<<<<< HEAD
+    "python.formatting.provider": "none"
+=======
+    "python.formatting.provider": "black"
+>>>>>>> 94a6e023ca7668f9c653d662b55897c8a179a501
+}

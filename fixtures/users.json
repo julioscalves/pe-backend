@@ -1,0 +1,13 @@
+[
+    {
+        "model": "auth.user",
+        "pk": 2,
+        "fields": {
+            "username": "sys",
+            "password": "pbkdf2_sha256$600000$Ny4KbAwX2pQu21OJNbjSX4$D+68BGKOs8PrdLI6/KCKsuoyHHoAxy/F9gR3UeF3UTQ=",
+            "email": "",
+            "first_name": "",
+            "last_name": ""
+        }
+    }
+]

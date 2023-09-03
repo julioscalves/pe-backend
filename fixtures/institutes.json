@@ -1,0 +1,19 @@
+[
+    {
+        "model": "users.institute",
+        "pk": 1,
+        "fields": {
+            "name": "Universidade Federal de Pernambuco",
+            "abbreviation": "UFPE"
+
+        }
+    },
+    {
+        "model": "users.institute",
+        "pk": 2,
+        "fields": {
+            "name": "Universidade Federal da Paraíba",
+            "abbreviation": "UFPB"
+        }
+    }
+]

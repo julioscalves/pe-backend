@@ -1,0 +1,35 @@
+[
+    {
+        "model": "users.profile",
+        "pk": 1,
+        "fields": {
+            "name": "John Doe",
+            "user": 1,
+            "institute": 1,
+            "department": 1,
+            "requisitions": null
+        }
+    },
+    {
+        "model": "users.profile",
+        "pk": 2,
+        "fields": {
+            "name": "Jane Smith",
+            "user": 2,
+            "institute": 2,
+            "department": 2,
+            "requisitions": null
+        }
+    },
+    {
+        "model": "users.profile",
+        "pk": 3,
+        "fields": {
+            "name": "Alice Johnson",
+            "user": 3,
+            "institute": 3,
+            "department": 3,
+            "requisitions": null
+        }
+    }
+]

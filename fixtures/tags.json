@@ -1,0 +1,66 @@
+[
+    {
+        "model": "requisitions.tag",
+        "pk": 1,
+        "fields": {
+            "name": "Aula prática",
+            "slug": "aula-pratica"
+        }
+    },
+    {
+        "model": "requisitions.tag",
+        "pk": 2,
+        "fields": {
+            "name": "Solicitação externa",
+            "slug": "solicitacao-externa"
+        }
+    },
+    {
+        "model": "requisitions.tag",
+        "pk": 4,
+        "fields": {
+            "name": "Recebida",
+            "slug": "recebida"
+        }
+    },
+    {
+        "model": "requisitions.tag",
+        "pk": 5,
+        "fields": {
+            "name": "Em produção",
+            "slug": "em-producao"
+        }
+    },
+    {
+        "model": "requisitions.tag",
+        "pk": 6,
+        "fields": {
+            "name": "Concluída",
+            "slug": "concluida"
+        }
+    },
+    {
+        "model": "requisitions.tag",
+        "pk": 7,
+        "fields": {
+            "name": "Parcialmente entregue",
+            "slug": "parcialmente-entregue"
+        }
+    },
+    {
+        "model": "requisitions.tag",
+        "pk": 8,
+        "fields": {
+            "name": "Suspensa",
+            "slug": "suspensa"
+        }
+    },
+    {
+        "model": "requisitions.tag",
+        "pk": 9,
+        "fields": {
+            "name": "Cancelada",
+            "slug": "cancelada"
+        }
+    }
+]
