@@ -2,10 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter
+from rest_framework.pagination import PageNumberPagination
 
 from django.contrib.auth.models import User
 
@@ -37,7 +38,6 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -48,10 +48,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
             )
 
         if user.is_staff:
-            return Profile.objects.all().exclude(is_hidden=True)
+            queryset = Profile.objects.all().exclude(is_hidden=True)
 
         else:
-            return Profile.objects.filter(user=user)
+            queryset = Profile.objects.filter(user=user)
+
+        queryset = queryset.order_by("name")
+        
+        return queryset
         
     def partial_update(self, request, *args, **kwargs):
         user_id = request.data.get('id')
@@ -112,6 +116,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class UserAuthenticationView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, format=None):
         serializer = UserAuthenticationSerializer(data=request.data)
 
@@ -133,6 +139,8 @@ class UserAuthenticationView(APIView):
 
 
 class TokenVerifierView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, format=None):
         serializer = TokenValidationSerializer(data=request.data)
 
