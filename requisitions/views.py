@@ -31,14 +31,10 @@ from users.models import Profile
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
     parser_classes = [MultiPartParser]
     search_fields = ["title"]
     lookup_field = "slug"
-
-    pagination_class = PageNumberPagination
-    page_size = 25
 
     def get_queryset(self):
         user = self.request.user
@@ -78,11 +74,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 class DeliveryViewSet(viewsets.ModelViewSet):
     serializer_class = DeliverySerializer
-    permissions_classes = [IsAuthenticated]
     filter_backends = [OrderingFilter]
     ordering_fields = ["timestamp"]
-    pagination_class = PageNumberPagination
-    page_size = 25
 
     def get_queryset(self):
         user = self.request.user
@@ -123,14 +116,11 @@ class DeliveryViewSet(viewsets.ModelViewSet):
 
 class RequisitionViewSet(viewsets.ModelViewSet):
     serializer_class = RequisitionSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [OrderingFilter]
     ordering_fields = ["timestamp"]
     lookup_field = "protocol"
     lookup_value_regex = r"[0-9]+\.[0-9]+"
     http_method_names = ["get", "post", "put", "patch", "delete"]
-    pagination_class = PageNumberPagination
-    page_size = 25
 
     def get_queryset(self):
         user = self.request.user
@@ -175,7 +165,6 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
 class RequisitionEventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
-    permissions_classes = [IsAuthenticated]
     filter_backends = [OrderingFilter]
     ordering_fields = ["timestamp"]
 
@@ -193,7 +182,6 @@ class RequisitionEventViewSet(viewsets.ModelViewSet):
 
 class RequisitionStatusViewSet(viewsets.ModelViewSet):
     serializer_class = StatusSerializer
-    permissions_classes = [IsAuthenticated]
     filter_backends = [OrderingFilter]
     ordering_fields = ["timestamp"]
 
@@ -211,7 +199,7 @@ class RequisitionStatusViewSet(viewsets.ModelViewSet):
 
 class RequisitionTagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
-    permissions_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user

@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter
@@ -38,7 +38,6 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -117,6 +116,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class UserAuthenticationView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, format=None):
         serializer = UserAuthenticationSerializer(data=request.data)
 
@@ -138,6 +139,8 @@ class UserAuthenticationView(APIView):
 
 
 class TokenVerifierView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, format=None):
         serializer = TokenValidationSerializer(data=request.data)
 
