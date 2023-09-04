@@ -5,6 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser
+from rest_framework.pagination import PageNumberPagination
 
 from .models import (
     Requisition,
@@ -36,13 +37,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
     search_fields = ["title"]
     lookup_field = "slug"
 
+    pagination_class = PageNumberPagination
+    page_size = 25
+
     def get_queryset(self):
         user = self.request.user
 
         if user.is_staff:
-            return Project.objects.all()
+            queryset = Project.objects.all()
 
-        return Project.objects.filter(author=user.profile)
+        else:
+            queryset = Project.objects.filter(author=user.profile)
+
+        queryset = queryset.order_by("title")
+
+        return queryset
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -72,14 +81,21 @@ class DeliveryViewSet(viewsets.ModelViewSet):
     permissions_classes = [IsAuthenticated]
     filter_backends = [OrderingFilter]
     ordering_fields = ["timestamp"]
+    pagination_class = PageNumberPagination
+    page_size = 25
 
     def get_queryset(self):
         user = self.request.user
 
         if user.is_staff:
-            return Delivery.objects.filter(is_active=True)
+            queryset =  Delivery.objects.filter(is_active=True)
 
-        return Delivery.objects.filter(author=user.profile, is_active=True)
+        else:
+            queryset = Delivery.objects.filter(author=user.profile, is_active=True)
+
+        queryset = queryset.order_by('-timestamp')
+
+        return queryset
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -113,14 +129,21 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     lookup_field = "protocol"
     lookup_value_regex = r"[0-9]+\.[0-9]+"
     http_method_names = ["get", "post", "put", "patch", "delete"]
+    pagination_class = PageNumberPagination
+    page_size = 25
 
     def get_queryset(self):
         user = self.request.user
 
         if user.is_staff:
-            return Requisition.objects.all()
+            queryset = Requisition.objects.all()
 
-        return Requisition.objects.filter(author=user.profile)
+        else:
+            queryset = Requisition.objects.filter(author=user.profile)
+
+        queryset = queryset.order_by("-timestamp")
+
+        return queryset
 
     def create(self, request, *args, **kwargs):
         project_id = request.data.get("project").split("-")[-1]
@@ -194,8 +217,9 @@ class RequisitionTagViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if user.is_staff:
-            return Tag.objects.all()
-
+            queryset = Tag.objects.all()
+            queryset = queryset.order_by('name')
+            return queryset
         else:
             raise PermissionDenied(
                 "Você não possui as permissões necessárias para acessar este recurso."
@@ -226,7 +250,9 @@ class StatisticsViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def generate_statistics(self, queryset): # Note to self: This needs to be refactored.
+    def generate_statistics(
+        self, queryset
+    ):  # Note to self: This needs to be refactored.
         data = {
             "by_total": {
                 "required_males": 0,
@@ -256,7 +282,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 if not value in data[key]:
                     data[key][value] = {
                         "required_males": 0,
-                        "required_females": 0, 
+                        "required_females": 0,
                         "delivered_males": 0,
                         "delivered_females": 0,
                     }
@@ -264,7 +290,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
             for tag in query.requisition.tags.all():
                 data["by_tags"][tag.name] = {
                     "required_males": 0,
-                    "required_females": 0, 
+                    "required_females": 0,
                     "delivered_males": 0,
                     "delivered_females": 0,
                 }
@@ -289,12 +315,12 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                     "required_females"
                 ] += query.requisition.females
 
-                data["by_department"][query.requisition.project.advisor.department.name][
-                    "required_males"
-                ] += query.requisition.males
-                data["by_department"][query.requisition.project.advisor.department.name][
-                    "required_females"
-                ] += query.requisition.females
+                data["by_department"][
+                    query.requisition.project.advisor.department.name
+                ]["required_males"] += query.requisition.males
+                data["by_department"][
+                    query.requisition.project.advisor.department.name
+                ]["required_females"] += query.requisition.females
 
                 data["by_advisor"][query.requisition.project.advisor.name][
                     "required_males"
@@ -318,8 +344,12 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 ] += query.requisition.females
 
                 for tag in query.requisition.tags.all():
-                    data["by_tags"][tag.name]["required_males"] += query.requisition.males
-                    data["by_tags"][tag.name]["required_females"] += query.requisition.females  
+                    data["by_tags"][tag.name][
+                        "required_males"
+                    ] += query.requisition.males
+                    data["by_tags"][tag.name][
+                        "required_females"
+                    ] += query.requisition.females
 
                 data["by_total"]["required_males"] += query.requisition.males
                 data["by_total"]["required_females"] += query.requisition.females
@@ -371,7 +401,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
 
             for tag in query.requisition.tags.all():
                 data["by_tags"][tag.name]["delivered_males"] += query.males
-                data["by_tags"][tag.name]["delivered_females"] += query.females              
+                data["by_tags"][tag.name]["delivered_females"] += query.females
 
             processed.append(protocol)
 
