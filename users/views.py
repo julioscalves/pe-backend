@@ -54,44 +54,58 @@ class ProfileViewSet(viewsets.ModelViewSet):
             queryset = Profile.objects.filter(user=user)
 
         queryset = queryset.order_by("name")
-        
+
         return queryset
-        
+
     def partial_update(self, request, *args, **kwargs):
-        user_id = request.data.get('id')
-        email = request.data.get('email')
-        is_staff = request.data.get('isStaff')
+        user_id = request.data.get("id")
+        email = request.data.get("email")
+        is_staff = request.data.get("isStaff", False)
+        is_advisor = request.data.get("isAdvisor", False)
 
         profile_instance = Profile.objects.get(id=user_id)
         user_instance = User.objects.get(id=profile_instance.user.id)
         user_instance.email = email
         user_instance.is_staff = is_staff
-        user_instance.save()      
+        user_instance.save()
+        profile_instance.is_advisor = is_advisor
+        profile_instance.save()
 
-        kwargs['partial'] = True
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     def create(self, request):
-        if "username" not in request.data or request.data["username"] == '':
+        if "username" not in request.data or request.data["username"] == "":
             request.data["username"] = generate_random_username(random_suffix_length=12)
 
-        if "password" not in request.data or request.data["password"] == '':
+        if "password" not in request.data or request.data["password"] == "":
             request.data["password"] = generate_random_password(
                 random_password_length=12
             )
 
+        is_staff = request.data.get("isStaff", False)
+        is_advisor = request.data.get("isAdvisor", False)
+
         user_serializer = UserSerializer(data=request.data)
         user_serializer.is_valid(raise_exception=True)
         user_instance = user_serializer.save()
+        user_instance.is_staff = is_staff
+        user_instance.save
+        
         request.data["user"] = user_instance
 
-        institute = Institute.objects.get(name=request.data["institute"])
-        department = Department.objects.get(name=request.data["department"])
+        institute, _ = Institute.objects.get(name=request.data["institute"])
+        department, _ = Department.objects.get(name=request.data["department"])
 
         profile_serializer = ProfileSerializer(data=request.data)
 
         if profile_serializer.is_valid():
-            profile_serializer.save(user=user_instance, department=department, institute=institute)
+            profile_serializer.save(
+                user=user_instance,
+                is_advisor=is_advisor,
+                department=department,
+                institute=institute,
+            )
             return Response(profile_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -100,7 +114,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if user.is_staff:
-            queryset = self.filter_queryset(Profile.objects.all().exclude(is_hidden=True))
+            queryset = self.filter_queryset(
+                Profile.objects.all().exclude(is_hidden=True)
+            )
 
         else:
             queryset = self.filter_queryset(Profile.objects.filter(is_advisor=True))
