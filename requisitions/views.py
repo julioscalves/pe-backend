@@ -123,14 +123,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "patch", "delete"]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = Requisition.objects.all()
-
-        else:
-            queryset = Requisition.objects.filter(author=user.profile)
-
+        queryset = Requisition.objects.all()
         queryset = queryset.order_by("-timestamp")
 
         return queryset

@@ -51,22 +51,35 @@ class ProfileViewSet(viewsets.ModelViewSet):
         is_staff = request.data.get("isStaff", False)
         is_advisor = request.data.get("isAdvisor", False)
 
-        profile_instance = Profile.objects.get(user__id=user_id)
-        profile_instance.user.email = email
-        profile_instance.user.is_staff = is_staff
-        profile_instance.is_advisor = is_advisor
-        profile_instance.save()
+        institute = Institute.objects.get(name=request.data["institute"])
+        department = Department.objects.get(name=request.data["department"])
 
-        print(profile_instance.user.is_staff)
-        
-        kwargs["partial"] = True
-        return self.update(request, *args, **kwargs)
+        try:
+            profile_instance = Profile.objects.get(id=user_id)
+            profile_instance.is_advisor = is_advisor
+            profile_instance.institute = institute
+            profile_instance.department = department
+            profile_instance.save()
+
+            user_instance = User.objects.get(id=profile_instance.user.id)
+            user_instance.email = email
+            user_instance.is_staff = is_staff
+            user_instance.save()
+
+            kwargs["partial"] = True
+            return self.update(request, *args, **kwargs)
+
+        except (Profile.DoesNotExist, User.DoesNotExist) as e:
+            return Response(
+                {"error": "Profile or User not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def create(self, request):
-        if "username" not in request.data or request.data["username"] == "":
+        if not request.data.get("username"):
             request.data["username"] = generate_random_username(random_suffix_length=12)
 
-        if "password" not in request.data or request.data["password"] == "":
+        if not request.data.get("password"):
             request.data["password"] = generate_random_password(
                 random_password_length=12
             )
@@ -78,30 +91,31 @@ class ProfileViewSet(viewsets.ModelViewSet):
         user_serializer.is_valid(raise_exception=True)
         user_instance = user_serializer.save()
         user_instance.is_staff = is_staff
-        user_instance.save
-        
-        request.data["user"] = user_instance
+        user_instance.save()
 
         institute = Institute.objects.get(name=request.data["institute"])
         department = Department.objects.get(name=request.data["department"])
 
-        profile_serializer = ProfileSerializer(data=request.data)
+        profile_data = {
+            **request.data,
+            "user": user_instance,
+            "is_advisor": is_advisor,
+            "department": department,
+            "institute": institute,
+        }
+
+        profile_serializer = ProfileSerializer(data=profile_data)
 
         if profile_serializer.is_valid():
             profile_serializer.save(
-                user=user_instance,
-                is_advisor=is_advisor,
-                department=department,
-                institute=institute,
+                user=user_instance, institute=institute, department=department
             )
             return Response(profile_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(
-                Profile.objects.all().exclude(is_hidden=True)
-            )
+        queryset = self.filter_queryset(Profile.objects.all().exclude(is_hidden=True))
 
         page = self.paginate_queryset(queryset)
 
