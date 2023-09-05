@@ -40,22 +40,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
 
     def get_queryset(self):
-        user = self.request.user
-
-        if not user.is_authenticated:
-            raise PermissionDenied(
-                "Você não possui as permissões necessárias para acessar este recurso."
-            )
-
-        if user.is_staff:
-            queryset = Profile.objects.all().exclude(is_hidden=True)
-
-        else:
-            queryset = Profile.objects.filter(user=user)
-
+        queryset = Profile.objects.all().exclude(is_hidden=True)
         queryset = queryset.order_by("name")
-
-        print(queryset)
 
         return queryset
 
@@ -66,13 +52,13 @@ class ProfileViewSet(viewsets.ModelViewSet):
         is_advisor = request.data.get("isAdvisor", False)
 
         profile_instance = Profile.objects.get(user__id=user_id)
-        user_instance = User.objects.get(id=profile_instance.user.id)
-        user_instance.email = email
-        user_instance.is_staff = is_staff
-        user_instance.save()
+        profile_instance.user.email = email
+        profile_instance.user.is_staff = is_staff
         profile_instance.is_advisor = is_advisor
         profile_instance.save()
 
+        print(profile_instance.user.is_staff)
+        
         kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
