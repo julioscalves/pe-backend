@@ -55,6 +55,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
         queryset = queryset.order_by("name")
 
+        print(queryset)
+
         return queryset
 
     def partial_update(self, request, *args, **kwargs):
@@ -63,7 +65,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         is_staff = request.data.get("isStaff", False)
         is_advisor = request.data.get("isAdvisor", False)
 
-        profile_instance = Profile.objects.get(id=user_id)
+        profile_instance = Profile.objects.get(user__id=user_id)
         user_instance = User.objects.get(id=profile_instance.user.id)
         user_instance.email = email
         user_instance.is_staff = is_staff
@@ -94,8 +96,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
         
         request.data["user"] = user_instance
 
-        institute, _ = Institute.objects.get(name=request.data["institute"])
-        department, _ = Department.objects.get(name=request.data["department"])
+        institute = Institute.objects.get(name=request.data["institute"])
+        department = Department.objects.get(name=request.data["department"])
 
         profile_serializer = ProfileSerializer(data=request.data)
 
@@ -111,15 +113,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request, *args, **kwargs):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = self.filter_queryset(
+        queryset = self.filter_queryset(
                 Profile.objects.all().exclude(is_hidden=True)
             )
-
-        else:
-            queryset = self.filter_queryset(Profile.objects.filter(is_advisor=True))
 
         page = self.paginate_queryset(queryset)
 
