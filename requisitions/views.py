@@ -2,10 +2,9 @@ from django_filters import rest_framework as django_filters
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser
-from rest_framework.pagination import PageNumberPagination
+
 
 from .models import (
     Requisition,
@@ -37,14 +36,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     lookup_field = "slug"
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = Project.objects.all()
-
-        else:
-            queryset = Project.objects.filter(author=user.profile)
-
+        queryset = Project.objects.all()
         queryset = queryset.order_by("title")
 
         return queryset
@@ -78,15 +70,8 @@ class DeliveryViewSet(viewsets.ModelViewSet):
     ordering_fields = ["timestamp"]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset =  Delivery.objects.filter(is_active=True)
-
-        else:
-            queryset = Delivery.objects.filter(author=user.profile, is_active=True)
-
-        queryset = queryset.order_by('-timestamp')
+        queryset = Delivery.objects.filter(is_active=True)
+        queryset = queryset.order_by("-timestamp")
 
         return queryset
 
@@ -179,15 +164,7 @@ class RequisitionStatusViewSet(viewsets.ModelViewSet):
     ordering_fields = ["timestamp"]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            return Status.objects.all()
-
-        else:
-            raise PermissionDenied(
-                "Você não possui as permissões necessárias para acessar este recurso."
-            )
+        return Status.objects.all()
 
 
 class RequisitionTagViewSet(viewsets.ModelViewSet):
@@ -195,16 +172,9 @@ class RequisitionTagViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = Tag.objects.all()
-            queryset = queryset.order_by('name')
-            return queryset
-        else:
-            raise PermissionDenied(
-                "Você não possui as permissões necessárias para acessar este recurso."
-            )
+        queryset = Tag.objects.all()
+        queryset = queryset.order_by("name")
+        return queryset
 
 
 class StatisticsFilter(django_filters.FilterSet):
