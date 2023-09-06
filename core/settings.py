@@ -133,6 +133,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = "static/"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -153,5 +155,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25, 
+    'PAGE_SIZE': 4, 
 }
