@@ -27,6 +27,7 @@ class InstituteViewSet(viewsets.ModelViewSet):
     serializer_class = InstituteSerializer
     filter_backends = [SearchFilter]
     search_fields = ["name", "abbreviation"]
+    pagination_class = None
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
@@ -34,6 +35,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     serializer_class = DepartmentSerializer
     filter_backends = [SearchFilter]
     search_fields = ["name"]
+    pagination_class = None
 
 
 class ProfileViewSet(viewsets.ModelViewSet):

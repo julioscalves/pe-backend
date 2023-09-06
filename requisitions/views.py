@@ -225,6 +225,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
     filter_backends = [django_filters.DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = StatisticsFilter
     ordering_fields = ["date", "males", "females"]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Delivery.objects.select_related("requisition")
