@@ -225,7 +225,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
             mapping = {
                 "by_protocol": query.requisition.protocol,
                 "by_institute": query.requisition.project.advisor.institute.name,
-                "by_department": query.requisition.project.advisor.department.name,
+                "by_department": f"{query.requisition.project.advisor.department.name} ({query.requisition.project.advisor.department.institute.abbreviation})",
                 "by_advisor": query.requisition.project.advisor.name,
                 "by_author": query.requisition.project.author.name,
                 "by_project": query.requisition.project.title,
@@ -268,10 +268,10 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 ] += query.requisition.females
 
                 data["by_department"][
-                    query.requisition.project.advisor.department.name
+                    f"{query.requisition.project.advisor.department.name} ({query.requisition.project.advisor.department.institute.abbreviation})"
                 ]["required_males"] += query.requisition.males
                 data["by_department"][
-                    query.requisition.project.advisor.department.name
+                    f"{query.requisition.project.advisor.department.name} ({query.requisition.project.advisor.department.institute.abbreviation})"
                 ]["required_females"] += query.requisition.females
 
                 data["by_advisor"][query.requisition.project.advisor.name][
@@ -320,12 +320,12 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 "delivered_females"
             ] += query.females
 
-            data["by_department"][query.requisition.project.advisor.department.name][
-                "delivered_males"
-            ] += query.males
-            data["by_department"][query.requisition.project.advisor.department.name][
-                "delivered_females"
-            ] += query.females
+            data["by_department"][
+                f"{query.requisition.project.advisor.department.name} ({query.requisition.project.advisor.department.institute.abbreviation})"
+            ]["delivered_males"] += query.males
+            data["by_department"][
+                f"{query.requisition.project.advisor.department.name} ({query.requisition.project.advisor.department.institute.abbreviation})"
+            ]["delivered_females"] += query.females
 
             data["by_advisor"][query.requisition.project.advisor.name][
                 "delivered_males"
