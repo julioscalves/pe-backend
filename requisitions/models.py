@@ -45,7 +45,7 @@ class Project(models.Model):
 class Delivery(models.Model):
     date = models.DateField(blank=False, null=False)
     timestamp = models.DateTimeField(auto_now_add=True, editable=False)
-    author = models.ForeignKey("users.Profile", on_delete=models.CASCADE)
+    author = models.ForeignKey("users.Profile", on_delete=models.CASCADE, null=True)
     males = models.PositiveSmallIntegerField(default=0)
     females = models.PositiveSmallIntegerField(default=0)
     notes = models.TextField(blank=True, default="")
@@ -77,8 +77,6 @@ class Delivery(models.Model):
             or all_deliveries["females"] >= requisition.females
         )
 
-        system_profile = Profile.objects.get(user__username="sys")
-
         if males_satisfied and females_satisfied:
             requisition.tags.add(concluded_tag)
             requisition.tags.remove(partial_tag)
@@ -86,7 +84,6 @@ class Delivery(models.Model):
                 Status.objects.create(
                     status="CO",
                     message="Estado alterado para requisição concluída.",
-                    author=system_profile,
                     requisition=requisition,
                 )
             requisition.tags.remove(received_tag)
@@ -98,7 +95,6 @@ class Delivery(models.Model):
                 Status.objects.create(
                     status="PA",
                     message="Estado alterado para requisição parcialmente concluída.",
-                    author=system_profile,
                     requisition=requisition,
                 )
 
@@ -113,7 +109,7 @@ class Event(models.Model):
     title = models.CharField(max_length=60)
     message = models.TextField(blank=True, default="")
     timestamp = models.DateTimeField(auto_now_add=True, editable=False)
-    author = models.ForeignKey("users.Profile", on_delete=models.CASCADE)
+    author = models.ForeignKey("users.Profile", on_delete=models.CASCADE, null=True)
     requisition = models.ForeignKey(
         "requisitions.Requisition",
         on_delete=models.CASCADE,
@@ -128,7 +124,7 @@ class Status(models.Model):
     status = models.CharField(max_length=2, choices=REQUISITION_OPTIONS, default="EN")
     message = models.TextField(blank=True, default="")
     timestamp = models.DateTimeField(auto_now_add=True, editable=False)
-    author = models.ForeignKey("users.Profile", on_delete=models.CASCADE)
+    author = models.ForeignKey("users.Profile", on_delete=models.CASCADE, null=True)
     requisition = models.ForeignKey(
         "requisitions.Requisition",
         on_delete=models.CASCADE,
@@ -194,7 +190,10 @@ class Requisition(models.Model):
     )
     project = models.ForeignKey("requisitions.Project", on_delete=models.CASCADE)
     author = models.ForeignKey(
-        "users.Profile", on_delete=models.CASCADE, related_name="requisition_author"
+        "users.Profile",
+        on_delete=models.CASCADE,
+        related_name="requisition_author",
+        null=True,
     )
     author_notes = models.TextField(blank=True, default="")
 
@@ -217,11 +216,8 @@ class Requisition(models.Model):
 
         super().save(*args, **kwargs)
 
-        system_profile = Profile.objects.get(user__username="sys")
-
         if not Delivery.objects.filter(requisition=self).exists():
             Delivery.objects.create(
-                author=system_profile,
                 requisition=self,
                 is_active=False,
                 date=datetime.now(),
@@ -233,6 +229,5 @@ class Requisition(models.Model):
             Status.objects.create(
                 status="RE",
                 message="Requisição recebida.",
-                author=system_profile,
                 requisition=self,
             )
