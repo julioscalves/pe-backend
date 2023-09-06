@@ -37,6 +37,24 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     search_fields = ["name"]
     pagination_class = None
 
+    def create(self, request):
+        institute_received = request.data["institute"]
+        institute = Institute.objects.get(name=institute_received)
+
+        data = {
+            **request.data,
+            "institute": institute.pk
+        }
+
+        department_serializer = DepartmentSerializer(data=data)
+
+        if department_serializer.is_valid():
+            department_serializer.save()
+
+            return Response(department_serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
