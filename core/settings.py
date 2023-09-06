@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG_MODE")
 
-ALLOWED_HOSTS = ["http://localhost:3000", "http://localhost:8000", "127.0.0.1"]
+ALLOWED_HOSTS = ["http://localhost:3000", "http://localhost:8000", "127.0.0.1", "bionutriufpe.pythonanywhere.com"]
 
 
 # Application definition
@@ -138,7 +138,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "https://bio-nutri.vercel.app"]
 
 MEDIA_URL = os.environ.get("MEDIA_URL")
 
