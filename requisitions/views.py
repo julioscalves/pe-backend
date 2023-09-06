@@ -2,10 +2,9 @@ from django_filters import rest_framework as django_filters
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser
-from rest_framework.pagination import PageNumberPagination
+
 
 from .models import (
     Requisition,
@@ -37,17 +36,32 @@ class ProjectViewSet(viewsets.ModelViewSet):
     lookup_field = "slug"
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = Project.objects.all()
-
-        else:
-            queryset = Project.objects.filter(author=user.profile)
-
+        queryset = Project.objects.all()
         queryset = queryset.order_by("title")
 
         return queryset
+    
+    def update(self, request, *args, **kwargs):
+        request_author = request.data.get('author')
+        request_advisor = request.data.get('advisor')
+        author_instance = Profile.objects.get(name=request_author)
+        advisor_instance = Profile.objects.get(name=request_advisor)
+
+        data_copy = request.data.copy()
+        del data_copy['author']
+        del data_copy['advisor']
+
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        instance.author = author_instance
+        instance.advisor = advisor_instance
+
+        serializer = self.get_serializer(instance, data=data_copy, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+    
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -78,15 +92,8 @@ class DeliveryViewSet(viewsets.ModelViewSet):
     ordering_fields = ["timestamp"]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset =  Delivery.objects.filter(is_active=True)
-
-        else:
-            queryset = Delivery.objects.filter(author=user.profile, is_active=True)
-
-        queryset = queryset.order_by('-timestamp')
+        queryset = Delivery.objects.filter(is_active=True)
+        queryset = queryset.order_by("-timestamp")
 
         return queryset
 
@@ -179,15 +186,7 @@ class RequisitionStatusViewSet(viewsets.ModelViewSet):
     ordering_fields = ["timestamp"]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            return Status.objects.all()
-
-        else:
-            raise PermissionDenied(
-                "Você não possui as permissões necessárias para acessar este recurso."
-            )
+        return Status.objects.all()
 
 
 class RequisitionTagViewSet(viewsets.ModelViewSet):
@@ -195,16 +194,9 @@ class RequisitionTagViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = Tag.objects.all()
-            queryset = queryset.order_by('name')
-            return queryset
-        else:
-            raise PermissionDenied(
-                "Você não possui as permissões necessárias para acessar este recurso."
-            )
+        queryset = Tag.objects.all()
+        queryset = queryset.order_by("name")
+        return queryset
 
 
 class StatisticsFilter(django_filters.FilterSet):
@@ -225,15 +217,14 @@ class StatisticsViewSet(viewsets.ModelViewSet):
     filter_backends = [django_filters.DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = StatisticsFilter
     ordering_fields = ["date", "males", "females"]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Delivery.objects.select_related("requisition")
 
         return queryset
 
-    def generate_statistics(
-        self, queryset
-    ):  # Note to self: This needs to be refactored.
+    def generate_statistics(self, queryset): 
         data = {
             "by_total": {
                 "required_males": 0,
@@ -251,13 +242,20 @@ class StatisticsViewSet(viewsets.ModelViewSet):
         }
 
         for query in queryset:
+            protocol = query.requisition.protocol
+            institute = query.requisition.project.advisor.institute
+            department = query.requisition.project.advisor.department
+            advisor = query.requisition.project.advisor
+            author = query.requisition.project.author
+            project = query.requisition.project
+
             mapping = {
-                "by_protocol": query.requisition.protocol,
-                "by_institute": query.requisition.project.advisor.institute.name,
-                "by_department": query.requisition.project.advisor.department.name,
-                "by_advisor": query.requisition.project.advisor.name,
-                "by_author": query.requisition.project.author.name,
-                "by_project": query.requisition.project.title,
+                "by_protocol": protocol,
+                "by_institute": institute.name,
+                "by_department": department.name,
+                "by_advisor": advisor.name,
+                "by_author": author.name,
+                "by_project": project.title,
             }
             for key, value in zip(mapping.keys(), mapping.values()):
                 if not value in data[key]:
@@ -280,47 +278,52 @@ class StatisticsViewSet(viewsets.ModelViewSet):
 
         for query in queryset:
             protocol = query.requisition.protocol
+            institute = query.requisition.project.advisor.institute
+            department = query.requisition.project.advisor.department
+            advisor = query.requisition.project.advisor
+            author = query.requisition.project.author
+            project = query.requisition.project
 
             if protocol not in processed:
-                data["by_protocol"][query.requisition.protocol][
+                data["by_protocol"][protocol][
                     "required_males"
                 ] += query.requisition.males
-                data["by_protocol"][query.requisition.protocol][
+                data["by_protocol"][protocol][
                     "required_females"
                 ] += query.requisition.females
 
-                data["by_institute"][query.requisition.project.advisor.institute.name][
+                data["by_institute"][institute.name][
                     "required_males"
                 ] += query.requisition.males
-                data["by_institute"][query.requisition.project.advisor.institute.name][
+                data["by_institute"][institute.name][
                     "required_females"
                 ] += query.requisition.females
 
                 data["by_department"][
-                    query.requisition.project.advisor.department.name
+                    department.name
                 ]["required_males"] += query.requisition.males
                 data["by_department"][
-                    query.requisition.project.advisor.department.name
+                    department.name
                 ]["required_females"] += query.requisition.females
 
-                data["by_advisor"][query.requisition.project.advisor.name][
+                data["by_advisor"][advisor.name][
                     "required_males"
                 ] += query.requisition.males
-                data["by_advisor"][query.requisition.project.advisor.name][
+                data["by_advisor"][advisor.name][
                     "required_females"
                 ] += query.requisition.females
 
-                data["by_author"][query.requisition.project.author.name][
+                data["by_author"][author.name][
                     "required_males"
                 ] += query.requisition.males
-                data["by_author"][query.requisition.project.author.name][
+                data["by_author"][author.name][
                     "required_females"
                 ] += query.requisition.females
 
-                data["by_project"][query.requisition.project.title][
+                data["by_project"][project.title][
                     "required_males"
                 ] += query.requisition.males
-                data["by_project"][query.requisition.project.title][
+                data["by_project"][project.title][
                     "required_females"
                 ] += query.requisition.females
 
@@ -335,45 +338,45 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 data["by_total"]["required_males"] += query.requisition.males
                 data["by_total"]["required_females"] += query.requisition.females
 
-            data["by_protocol"][query.requisition.protocol][
+            data["by_protocol"][protocol][
                 "delivered_males"
             ] += query.males
-            data["by_protocol"][query.requisition.protocol][
+            data["by_protocol"][protocol][
                 "delivered_females"
             ] += query.females
 
-            data["by_institute"][query.requisition.project.advisor.institute.name][
+            data["by_institute"][institute.name][
                 "delivered_males"
             ] += query.males
-            data["by_institute"][query.requisition.project.advisor.institute.name][
+            data["by_institute"][institute.name][
                 "delivered_females"
             ] += query.females
 
-            data["by_department"][query.requisition.project.advisor.department.name][
+            data["by_department"][department.name][
                 "delivered_males"
             ] += query.males
-            data["by_department"][query.requisition.project.advisor.department.name][
+            data["by_department"][department.name][
                 "delivered_females"
             ] += query.females
 
-            data["by_advisor"][query.requisition.project.advisor.name][
+            data["by_advisor"][advisor.name][
                 "delivered_males"
             ] += query.males
-            data["by_advisor"][query.requisition.project.advisor.name][
+            data["by_advisor"][advisor.name][
                 "delivered_females"
             ] += query.females
 
-            data["by_author"][query.requisition.project.author.name][
+            data["by_author"][author.name][
                 "delivered_males"
             ] += query.males
-            data["by_author"][query.requisition.project.author.name][
+            data["by_author"][author.name][
                 "delivered_females"
             ] += query.females
 
-            data["by_project"][query.requisition.project.title][
+            data["by_project"][project.title][
                 "delivered_males"
             ] += query.males
-            data["by_project"][query.requisition.project.title][
+            data["by_project"][project.title][
                 "delivered_females"
             ] += query.females
 
