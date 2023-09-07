@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG_MODE")
 
-ALLOWED_HOSTS = ["http://localhost:3000", "http://localhost:8000", "127.0.0.1"]
+ALLOWED_HOSTS = ["http://localhost:3000", "http://localhost:8000", "127.0.0.1", "bionutriufpe.pythonanywhere.com"]
 
 
 # Application definition
@@ -133,12 +133,14 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = "static/"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "https://bio-nutri.vercel.app"]
 
 MEDIA_URL = os.environ.get("MEDIA_URL")
 
@@ -153,5 +155,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25, 
+    'PAGE_SIZE': 4, 
 }

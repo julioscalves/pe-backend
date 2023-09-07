@@ -345,6 +345,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 "delivered_females"
             ] += query.females
 
+
             data["by_institute"][institute.abbreviation][
                 "delivered_males"
             ] += query.males
