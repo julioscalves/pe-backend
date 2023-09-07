@@ -225,7 +225,6 @@ class Requisition(models.Model):
             )
 
         if not Status.objects.filter(requisition=self).exists():
-            system_profile = Profile.objects.get(user__username="sys")
             Status.objects.create(
                 status="RE",
                 message="Requisição recebida.",
