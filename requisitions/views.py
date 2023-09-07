@@ -251,7 +251,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
 
             mapping = {
                 "by_protocol": protocol,
-                "by_institute": institute.name,
+                "by_institute": institute.abbreviation,
                 "by_department": department.name,
                 "by_advisor": advisor.name,
                 "by_author": author.name,
@@ -292,10 +292,10 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                     "required_females"
                 ] += query.requisition.females
 
-                data["by_institute"][institute.name][
+                data["by_institute"][institute.abbreviation][
                     "required_males"
                 ] += query.requisition.males
-                data["by_institute"][institute.name][
+                data["by_institute"][institute.abbreviation][
                     "required_females"
                 ] += query.requisition.females
 
@@ -345,10 +345,11 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 "delivered_females"
             ] += query.females
 
-            data["by_institute"][institute.name][
+
+            data["by_institute"][institute.abbreviation][
                 "delivered_males"
             ] += query.males
-            data["by_institute"][institute.name][
+            data["by_institute"][institute.abbreviation][
                 "delivered_females"
             ] += query.females
 
