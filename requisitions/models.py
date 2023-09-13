@@ -77,6 +77,15 @@ class Delivery(models.Model):
             or all_deliveries["females"] >= requisition.females
         )
 
+        males_partially_satisfied = (
+            all_deliveries["males"] is None
+            or all_deliveries["males"] < requisition.males
+        )
+        females_partially_satisfied = (
+            all_deliveries["females"] is None
+            or all_deliveries["females"] < requisition.males
+        )
+
         if males_satisfied and females_satisfied:
             requisition.tags.add(concluded_tag)
             requisition.tags.remove(partial_tag)
@@ -88,7 +97,7 @@ class Delivery(models.Model):
                 )
             requisition.tags.remove(received_tag)
 
-        else:
+        elif males_partially_satisfied and females_partially_satisfied:
             requisition.tags.add(partial_tag)
             requisition.tags.remove(concluded_tag)
             if not Status.objects.filter(status="PA", requisition=requisition):
@@ -99,6 +108,12 @@ class Delivery(models.Model):
                 )
 
             requisition.tags.remove(received_tag)
+
+        else:
+            requisition.tags.add(received_tag)
+            requisition.tags.remove(concluded_tag)
+            requisition.tags.remove(partial_tag)
+
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
