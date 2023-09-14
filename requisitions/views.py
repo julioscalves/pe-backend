@@ -252,7 +252,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
             mapping = {
                 "by_protocol": protocol,
                 "by_institute": institute.abbreviation,
-                "by_department": department.name,
+                "by_department": f"{department.name} ({institute.abbreviation})",
                 "by_advisor": advisor.name,
                 "by_author": author.name,
                 "by_project": project.title,
@@ -300,6 +300,7 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 ] += query.requisition.females
 
                 data["by_department"][
+
                     department.name
                 ]["required_males"] += query.requisition.males
                 data["by_department"][
