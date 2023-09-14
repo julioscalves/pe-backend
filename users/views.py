@@ -59,11 +59,9 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
-    filter_backends = [SearchFilter]
+    filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["name"]
-
-    filter_backends = [OrderingFilter]
-    ordering_fields = ['name'] 
+    ordering_fields = ["name"] 
 
     def get_queryset(self):
         queryset = Profile.objects.all().exclude(is_hidden=True)
