@@ -79,11 +79,11 @@ class Delivery(models.Model):
 
         males_partially_satisfied = (
             all_deliveries["males"] is None
-            or all_deliveries["males"] < requisition.males
+            or (requisition.males > 0 and all_deliveries["males"] < requisition.males)
         )
         females_partially_satisfied = (
             all_deliveries["females"] is None
-            or all_deliveries["females"] < requisition.males
+            or (requisition.females > 0 and all_deliveries["females"] < requisition.females)
         )
 
         if males_satisfied and females_satisfied:
