@@ -7,6 +7,7 @@ from rest_framework import status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import OrderingFilter
 
 from django.contrib.auth.models import User
 
@@ -58,6 +59,11 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ["name"]
+
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['name'] 
 
     def get_queryset(self):
         queryset = Profile.objects.all().exclude(is_hidden=True)

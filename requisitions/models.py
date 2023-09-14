@@ -103,7 +103,7 @@ class Delivery(models.Model):
             if not Status.objects.filter(status="PA", requisition=requisition):
                 Status.objects.create(
                     status="PA",
-                    message="Estado alterado para requisição parcialmente concluída.",
+                    message="Estado alterado para requisição em andamento.",
                     requisition=requisition,
                 )
 
