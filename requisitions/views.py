@@ -300,11 +300,10 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 ] += query.requisition.females
 
                 data["by_department"][
-
-                    department.name
+                    f"{department.name} ({institute.abbreviation})"
                 ]["required_males"] += query.requisition.males
                 data["by_department"][
-                    department.name
+                    f"{department.name} ({institute.abbreviation})"
                 ]["required_females"] += query.requisition.females
 
                 data["by_advisor"][advisor.name][
@@ -354,10 +353,10 @@ class StatisticsViewSet(viewsets.ModelViewSet):
                 "delivered_females"
             ] += query.females
 
-            data["by_department"][department.name][
+            data["by_department"][f"{department.name} ({institute.abbreviation})"][
                 "delivered_males"
             ] += query.males
-            data["by_department"][department.name][
+            data["by_department"][f"{department.name} ({institute.abbreviation})"][
                 "delivered_females"
             ] += query.females
 
