@@ -97,7 +97,7 @@ class Delivery(models.Model):
                 )
             requisition.tags.remove(received_tag)
 
-        elif males_partially_satisfied and females_partially_satisfied:
+        elif (males_partially_satisfied and females_satisfied) or (females_partially_satisfied and males_satisfied):
             requisition.tags.add(partial_tag)
             requisition.tags.remove(concluded_tag)
             if not Status.objects.filter(status="PA", requisition=requisition):
