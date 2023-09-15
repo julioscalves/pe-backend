@@ -114,8 +114,6 @@ class Delivery(models.Model):
             requisition.tags.remove(concluded_tag)
             requisition.tags.remove(partial_tag)
 
-        print(Status.objects.filter(requisition=requisition))
-
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
