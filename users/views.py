@@ -38,20 +38,21 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     def create(self, request):
         institute_received = request.data["institute"]
         institute = Institute.objects.get(name=institute_received)
+        serialized_institute = InstituteSerializer()
 
         data = {
             **request.data,
-            "institute": institute.pk
+            "institute": serialized_institute.data
         }
 
         department_serializer = DepartmentSerializer(data=data)
 
         if department_serializer.is_valid():
-            department_serializer.save()
+            department_serializer.save(institute=institute)
 
             return Response(department_serializer.data, status=status.HTTP_201_CREATED)
         
-        return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(department_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
