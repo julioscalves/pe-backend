@@ -14,6 +14,7 @@ class InstituteSerializer(serializers.ModelSerializer):
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
+    institute = InstituteSerializer(read_only=True)
     class Meta:
         model = Department
         fields = "__all__"
